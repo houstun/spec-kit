@@ -1,413 +1,413 @@
 # AGENTS.md
 
-## About Spec Kit and Specify
+## 关于 Spec Kit 和 Specify
 
-**GitHub Spec Kit** is a comprehensive toolkit for implementing Spec-Driven Development (SDD) - a methodology that emphasizes creating clear specifications before implementation. The toolkit includes templates, scripts, and workflows that guide development teams through a structured approach to building software.
+**GitHub Spec Kit** 是一个用于实现规格驱动开发（Spec-Driven Development, SDD）的综合工具包——这是一种强调在实现之前创建清晰规格说明的方法论。该工具包包含模板、脚本和工作流，引导开发团队采用结构化的方法来构建软件。
 
-**Specify CLI** is the command-line interface that bootstraps projects with the Spec Kit framework. It sets up the necessary directory structures, templates, and AI agent integrations to support the Spec-Driven Development workflow.
+**Specify CLI** 是一个命令行界面，用于使用 Spec Kit 框架初始化项目。它设置必要的目录结构、模板和 AI 代理集成，以支持规格驱动开发工作流。
 
-The toolkit supports multiple AI coding assistants, allowing teams to use their preferred tools while maintaining consistent project structure and development practices.
+该工具包支持多种 AI 编码助手，允许团队使用他们偏好的工具，同时保持一致的项目结构和开发实践。
 
 ---
 
-## General practices
+## 通用实践
 
-- Any changes to `__init__.py` for the Specify CLI require a version rev in `pyproject.toml` and addition of entries to `CHANGELOG.md`.
+- 对 Specify CLI 的 `__init__.py` 进行的任何更改都需要在 `pyproject.toml` 中更新版本号，并在 `CHANGELOG.md` 中添加相应条目。
 
-## Adding New Agent Support
+## 添加新的代理支持
 
-This section explains how to add support for new AI agents/assistants to the Specify CLI. Use this guide as a reference when integrating new AI tools into the Spec-Driven Development workflow.
+本节说明如何向 Specify CLI 添加对新 AI 代理/助手的支持。在将新 AI 工具集成到规格驱动开发工作流时，请将本指南作为参考。
 
-### Overview
+### 概述
 
-Specify supports multiple AI agents by generating agent-specific command files and directory structures when initializing projects. Each agent has its own conventions for:
+Specify 通过在初始化项目时生成特定于代理的命令文件和目录结构来支持多种 AI 代理。每个代理都有自己的约定：
 
-- **Command file formats** (Markdown, TOML, etc.)
-- **Directory structures** (`.claude/commands/`, `.windsurf/workflows/`, etc.)
-- **Command invocation patterns** (slash commands, CLI tools, etc.)
-- **Argument passing conventions** (`$ARGUMENTS`, `{{args}}`, etc.)
+- **命令文件格式**（Markdown、TOML 等）
+- **目录结构**（`.claude/commands/`、`.windsurf/workflows/` 等）
+- **命令调用模式**（斜杠命令、CLI 工具等）
+- **参数传递约定**（`$ARGUMENTS`、`{{args}}` 等）
 
-### Current Supported Agents
+### 当前支持的代理
 
-| Agent                      | Directory              | Format   | CLI Tool        | Description                 |
+| 代理                       | 目录                   | 格式     | CLI 工具        | 描述                        |
 | -------------------------- | ---------------------- | -------- | --------------- | --------------------------- |
-| **Claude Code**            | `.claude/commands/`    | Markdown | `claude`        | Anthropic's Claude Code CLI |
-| **Gemini CLI**             | `.gemini/commands/`    | TOML     | `gemini`        | Google's Gemini CLI         |
-| **GitHub Copilot**         | `.github/agents/`      | Markdown | N/A (IDE-based) | GitHub Copilot in VS Code   |
+| **Claude Code**            | `.claude/commands/`    | Markdown | `claude`        | Anthropic 的 Claude Code CLI |
+| **Gemini CLI**             | `.gemini/commands/`    | TOML     | `gemini`        | Google 的 Gemini CLI         |
+| **GitHub Copilot**         | `.github/agents/`      | Markdown | N/A（基于 IDE） | VS Code 中的 GitHub Copilot   |
 | **Cursor**                 | `.cursor/commands/`    | Markdown | `cursor-agent`  | Cursor CLI                  |
-| **Qwen Code**              | `.qwen/commands/`      | TOML     | `qwen`          | Alibaba's Qwen Code CLI     |
+| **Qwen Code**              | `.qwen/commands/`      | TOML     | `qwen`          | 阿里巴巴的 Qwen Code CLI     |
 | **opencode**               | `.opencode/command/`   | Markdown | `opencode`      | opencode CLI                |
 | **Codex CLI**              | `.codex/commands/`     | Markdown | `codex`         | Codex CLI                   |
-| **Windsurf**               | `.windsurf/workflows/` | Markdown | N/A (IDE-based) | Windsurf IDE workflows      |
-| **Kilo Code**              | `.kilocode/rules/`     | Markdown | N/A (IDE-based) | Kilo Code IDE               |
+| **Windsurf**               | `.windsurf/workflows/` | Markdown | N/A（基于 IDE） | Windsurf IDE 工作流          |
+| **Kilo Code**              | `.kilocode/rules/`     | Markdown | N/A（基于 IDE） | Kilo Code IDE               |
 | **Auggie CLI**             | `.augment/rules/`      | Markdown | `auggie`        | Auggie CLI                  |
-| **Roo Code**               | `.roo/rules/`          | Markdown | N/A (IDE-based) | Roo Code IDE                |
+| **Roo Code**               | `.roo/rules/`          | Markdown | N/A（基于 IDE） | Roo Code IDE                |
 | **CodeBuddy CLI**          | `.codebuddy/commands/` | Markdown | `codebuddy`     | CodeBuddy CLI               |
 | **Qoder CLI**              | `.qoder/commands/`     | Markdown | `qoder`         | Qoder CLI                   |
 | **Amazon Q Developer CLI** | `.amazonq/prompts/`    | Markdown | `q`             | Amazon Q Developer CLI      |
 | **Amp**                    | `.agents/commands/`    | Markdown | `amp`           | Amp CLI                     |
 | **SHAI**                   | `.shai/commands/`      | Markdown | `shai`          | SHAI CLI                    |
-| **IBM Bob**                | `.bob/commands/`       | Markdown | N/A (IDE-based) | IBM Bob IDE                 |
+| **IBM Bob**                | `.bob/commands/`       | Markdown | N/A（基于 IDE） | IBM Bob IDE                 |
 
-### Step-by-Step Integration Guide
+### 逐步集成指南
 
-Follow these steps to add a new agent (using a hypothetical new agent as an example):
+按照以下步骤添加新代理（以假设的新代理为例）：
 
-#### 1. Add to AGENT_CONFIG
+#### 1. 添加到 AGENT_CONFIG
 
-**IMPORTANT**: Use the actual CLI tool name as the key, not a shortened version.
+**重要提示**：使用实际的 CLI 工具名称作为键，而不是缩写版本。
 
-Add the new agent to the `AGENT_CONFIG` dictionary in `src/specify_cli/__init__.py`. This is the **single source of truth** for all agent metadata:
+在 `src/specify_cli/__init__.py` 的 `AGENT_CONFIG` 字典中添加新代理。这是所有代理元数据的**唯一真实来源**：
 
 ```python
 AGENT_CONFIG = {
-    # ... existing agents ...
-    "new-agent-cli": {  # Use the ACTUAL CLI tool name (what users type in terminal)
+    # ... 现有代理 ...
+    "new-agent-cli": {  # 使用实际的 CLI 工具名称（用户在终端中输入的内容）
         "name": "New Agent Display Name",
-        "folder": ".newagent/",  # Directory for agent files
-        "install_url": "https://example.com/install",  # URL for installation docs (or None if IDE-based)
-        "requires_cli": True,  # True if CLI tool required, False for IDE-based agents
+        "folder": ".newagent/",  # 代理文件的目录
+        "install_url": "https://example.com/install",  # 安装文档的 URL（如果是基于 IDE 的则为 None）
+        "requires_cli": True,  # 如果需要 CLI 工具则为 True，基于 IDE 的代理则为 False
     },
 }
 ```
 
-**Key Design Principle**: The dictionary key should match the actual executable name that users install. For example:
+**关键设计原则**：字典键应与用户安装的实际可执行文件名称匹配。例如：
 
-- ✅ Use `"cursor-agent"` because the CLI tool is literally called `cursor-agent`
-- ❌ Don't use `"cursor"` as a shortcut if the tool is `cursor-agent`
+- ✅ 使用 `"cursor-agent"` 因为 CLI 工具的名称就是 `cursor-agent`
+- ❌ 如果工具是 `cursor-agent`，不要使用 `"cursor"` 作为快捷方式
 
-This eliminates the need for special-case mappings throughout the codebase.
+这消除了在整个代码库中进行特殊情况映射的需要。
 
-**Field Explanations**:
+**字段说明**：
 
-- `name`: Human-readable display name shown to users
-- `folder`: Directory where agent-specific files are stored (relative to project root)
-- `install_url`: Installation documentation URL (set to `None` for IDE-based agents)
-- `requires_cli`: Whether the agent requires a CLI tool check during initialization
+- `name`：向用户显示的人类可读的显示名称
+- `folder`：存储代理特定文件的目录（相对于项目根目录）
+- `install_url`：安装文档 URL（对于基于 IDE 的代理设置为 `None`）
+- `requires_cli`：代理在初始化期间是否需要 CLI 工具检查
 
-#### 2. Update CLI Help Text
+#### 2. 更新 CLI 帮助文本
 
-Update the `--ai` parameter help text in the `init()` command to include the new agent:
+更新 `init()` 命令中 `--ai` 参数的帮助文本以包含新代理：
 
 ```python
 ai_assistant: str = typer.Option(None, "--ai", help="AI assistant to use: claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, codebuddy, new-agent-cli, or q"),
 ```
 
-Also update any function docstrings, examples, and error messages that list available agents.
+同时更新列出可用代理的任何函数文档字符串、示例和错误消息。
 
-#### 3. Update README Documentation
+#### 3. 更新 README 文档
 
-Update the **Supported AI Agents** section in `README.md` to include the new agent:
+更新 `README.md` 中的 **Supported AI Agents** 部分以包含新代理：
 
-- Add the new agent to the table with appropriate support level (Full/Partial)
-- Include the agent's official website link
-- Add any relevant notes about the agent's implementation
-- Ensure the table formatting remains aligned and consistent
+- 将新代理添加到表格中，并标注适当的支持级别（Full/Partial）
+- 包含代理的官方网站链接
+- 添加有关代理实现的任何相关注释
+- 确保表格格式保持对齐和一致
 
-#### 4. Update Release Package Script
+#### 4. 更新发布包脚本
 
-Modify `.github/workflows/scripts/create-release-packages.sh`:
+修改 `.github/workflows/scripts/create-release-packages.sh`：
 
-##### Add to ALL_AGENTS array
+##### 添加到 ALL_AGENTS 数组
 
 ```bash
 ALL_AGENTS=(claude gemini copilot cursor-agent qwen opencode windsurf q)
 ```
 
-##### Add case statement for directory structure
+##### 为目录结构添加 case 语句
 
 ```bash
 case $agent in
-  # ... existing cases ...
+  # ... 现有案例 ...
   windsurf)
     mkdir -p "$base_dir/.windsurf/workflows"
     generate_commands windsurf md "\$ARGUMENTS" "$base_dir/.windsurf/workflows" "$script" ;;
 esac
 ```
 
-#### 4. Update GitHub Release Script
+#### 4. 更新 GitHub 发布脚本
 
-Modify `.github/workflows/scripts/create-github-release.sh` to include the new agent's packages:
+修改 `.github/workflows/scripts/create-github-release.sh` 以包含新代理的包：
 
 ```bash
 gh release create "$VERSION" \
-  # ... existing packages ...
+  # ... 现有包 ...
   .genreleases/spec-kit-template-windsurf-sh-"$VERSION".zip \
   .genreleases/spec-kit-template-windsurf-ps-"$VERSION".zip \
-  # Add new agent packages here
+  # 在此处添加新代理包
 ```
 
-#### 5. Update Agent Context Scripts
+#### 5. 更新代理上下文脚本
 
-##### Bash script (`scripts/bash/update-agent-context.sh`)
+##### Bash 脚本（`scripts/bash/update-agent-context.sh`）
 
-Add file variable:
+添加文件变量：
 
 ```bash
 WINDSURF_FILE="$REPO_ROOT/.windsurf/rules/specify-rules.md"
 ```
 
-Add to case statement:
+添加到 case 语句：
 
 ```bash
 case "$AGENT_TYPE" in
-  # ... existing cases ...
+  # ... 现有案例 ...
   windsurf) update_agent_file "$WINDSURF_FILE" "Windsurf" ;;
   "")
-    # ... existing checks ...
+    # ... 现有检查 ...
     [ -f "$WINDSURF_FILE" ] && update_agent_file "$WINDSURF_FILE" "Windsurf";
-    # Update default creation condition
+    # 更新默认创建条件
     ;;
 esac
 ```
 
-##### PowerShell script (`scripts/powershell/update-agent-context.ps1`)
+##### PowerShell 脚本（`scripts/powershell/update-agent-context.ps1`）
 
-Add file variable:
+添加文件变量：
 
 ```powershell
 $windsurfFile = Join-Path $repoRoot '.windsurf/rules/specify-rules.md'
 ```
 
-Add to switch statement:
+添加到 switch 语句：
 
 ```powershell
 switch ($AgentType) {
-    # ... existing cases ...
+    # ... 现有案例 ...
     'windsurf' { Update-AgentFile $windsurfFile 'Windsurf' }
     '' {
         foreach ($pair in @(
-            # ... existing pairs ...
+            # ... 现有配对 ...
             @{file=$windsurfFile; name='Windsurf'}
         )) {
             if (Test-Path $pair.file) { Update-AgentFile $pair.file $pair.name }
         }
-        # Update default creation condition
+        # 更新默认创建条件
     }
 }
 ```
 
-#### 6. Update CLI Tool Checks (Optional)
+#### 6. 更新 CLI 工具检查（可选）
 
-For agents that require CLI tools, add checks in the `check()` command and agent validation:
+对于需要 CLI 工具的代理，在 `check()` 命令和代理验证中添加检查：
 
 ```python
-# In check() command
+# 在 check() 命令中
 tracker.add("windsurf", "Windsurf IDE (optional)")
 windsurf_ok = check_tool_for_tracker("windsurf", "https://windsurf.com/", tracker)
 
-# In init validation (only if CLI tool required)
+# 在 init 验证中（仅当需要 CLI 工具时）
 elif selected_ai == "windsurf":
     if not check_tool("windsurf", "Install from: https://windsurf.com/"):
         console.print("[red]Error:[/red] Windsurf CLI is required for Windsurf projects")
         agent_tool_missing = True
 ```
 
-**Note**: CLI tool checks are now handled automatically based on the `requires_cli` field in AGENT_CONFIG. No additional code changes needed in the `check()` or `init()` commands - they automatically loop through AGENT_CONFIG and check tools as needed.
+**注意**：CLI 工具检查现在根据 AGENT_CONFIG 中的 `requires_cli` 字段自动处理。无需在 `check()` 或 `init()` 命令中进行额外的代码更改——它们会自动循环遍历 AGENT_CONFIG 并根据需要检查工具。
 
-## Important Design Decisions
+## 重要设计决策
 
-### Using Actual CLI Tool Names as Keys
+### 使用实际 CLI 工具名称作为键
 
-**CRITICAL**: When adding a new agent to AGENT_CONFIG, always use the **actual executable name** as the dictionary key, not a shortened or convenient version.
+**关键提示**：向 AGENT_CONFIG 添加新代理时，始终使用**实际的可执行文件名称**作为字典键，而不是缩写或便捷版本。
 
-**Why this matters:**
+**为什么这很重要：**
 
-- The `check_tool()` function uses `shutil.which(tool)` to find executables in the system PATH
-- If the key doesn't match the actual CLI tool name, you'll need special-case mappings throughout the codebase
-- This creates unnecessary complexity and maintenance burden
+- `check_tool()` 函数使用 `shutil.which(tool)` 在系统 PATH 中查找可执行文件
+- 如果键与实际的 CLI 工具名称不匹配，您将需要在整个代码库中进行特殊情况映射
+- 这会造成不必要的复杂性和维护负担
 
-**Example - The Cursor Lesson:**
+**示例 - Cursor 的教训：**
 
-❌ **Wrong approach** (requires special-case mapping):
+❌ **错误做法**（需要特殊情况映射）：
 
 ```python
 AGENT_CONFIG = {
-    "cursor": {  # Shorthand that doesn't match the actual tool
+    "cursor": {  # 与实际工具不匹配的简写
         "name": "Cursor",
         # ...
     }
 }
 
-# Then you need special cases everywhere:
+# 然后到处都需要特殊情况：
 cli_tool = agent_key
 if agent_key == "cursor":
-    cli_tool = "cursor-agent"  # Map to the real tool name
+    cli_tool = "cursor-agent"  # 映射到真实的工具名称
 ```
 
-✅ **Correct approach** (no mapping needed):
+✅ **正确做法**（无需映射）：
 
 ```python
 AGENT_CONFIG = {
-    "cursor-agent": {  # Matches the actual executable name
+    "cursor-agent": {  # 匹配实际的可执行文件名称
         "name": "Cursor",
         # ...
     }
 }
 
-# No special cases needed - just use agent_key directly!
+# 无需特殊情况——直接使用 agent_key！
 ```
 
-**Benefits of this approach:**
+**这种方法的好处：**
 
-- Eliminates special-case logic scattered throughout the codebase
-- Makes the code more maintainable and easier to understand
-- Reduces the chance of bugs when adding new agents
-- Tool checking "just works" without additional mappings
+- 消除散布在整个代码库中的特殊情况逻辑
+- 使代码更易于维护和理解
+- 减少添加新代理时出现错误的机会
+- 工具检查"开箱即用"，无需额外映射
 
-#### 7. Update Devcontainer files (Optional)
+#### 7. 更新 Devcontainer 文件（可选）
 
-For agents that have VS Code extensions or require CLI installation, update the devcontainer configuration files:
+对于具有 VS Code 扩展或需要 CLI 安装的代理，更新 devcontainer 配置文件：
 
-##### VS Code Extension-based Agents
+##### 基于 VS Code 扩展的代理
 
-For agents available as VS Code extensions, add them to `.devcontainer/devcontainer.json`:
+对于可作为 VS Code 扩展使用的代理，将它们添加到 `.devcontainer/devcontainer.json`：
 
 ```json
 {
   "customizations": {
     "vscode": {
       "extensions": [
-        // ... existing extensions ...
-        // [New Agent Name]
-        "[New Agent Extension ID]"
+        // ... 现有扩展 ...
+        // [新代理名称]
+        "[新代理扩展 ID]"
       ]
     }
   }
 }
 ```
 
-##### CLI-based Agents
+##### 基于 CLI 的代理
 
-For agents that require CLI tools, add installation commands to `.devcontainer/post-create.sh`:
+对于需要 CLI 工具的代理，将安装命令添加到 `.devcontainer/post-create.sh`：
 
 ```bash
 #!/bin/bash
 
-# Existing installations...
+# 现有安装...
 
 echo -e "\n🤖 Installing [New Agent Name] CLI..."
-# run_command "npm install -g [agent-cli-package]@latest" # Example for node-based CLI
-# or other installation instructions (must be non-interactive and compatible with Linux Debian "Trixie" or later)...
+# run_command "npm install -g [agent-cli-package]@latest" # 基于 node 的 CLI 示例
+# 或其他安装说明（必须是非交互式的，并与 Linux Debian "Trixie" 或更高版本兼容）...
 echo "✅ Done"
 
 ```
 
-**Quick Tips:**
+**快速提示：**
 
-- **Extension-based agents**: Add to the `extensions` array in `devcontainer.json`
-- **CLI-based agents**: Add installation scripts to `post-create.sh`
-- **Hybrid agents**: May require both extension and CLI installation
-- **Test thoroughly**: Ensure installations work in the devcontainer environment
+- **基于扩展的代理**：添加到 `devcontainer.json` 的 `extensions` 数组中
+- **基于 CLI 的代理**：将安装脚本添加到 `post-create.sh`
+- **混合代理**：可能需要同时安装扩展和 CLI
+- **彻底测试**：确保安装在 devcontainer 环境中正常工作
 
-## Agent Categories
+## 代理类别
 
-### CLI-Based Agents
+### 基于 CLI 的代理
 
-Require a command-line tool to be installed:
+需要安装命令行工具：
 
-- **Claude Code**: `claude` CLI
-- **Gemini CLI**: `gemini` CLI
-- **Cursor**: `cursor-agent` CLI
-- **Qwen Code**: `qwen` CLI
-- **opencode**: `opencode` CLI
-- **Amazon Q Developer CLI**: `q` CLI
-- **CodeBuddy CLI**: `codebuddy` CLI
-- **Qoder CLI**: `qoder` CLI
-- **Amp**: `amp` CLI
-- **SHAI**: `shai` CLI
+- **Claude Code**：`claude` CLI
+- **Gemini CLI**：`gemini` CLI
+- **Cursor**：`cursor-agent` CLI
+- **Qwen Code**：`qwen` CLI
+- **opencode**：`opencode` CLI
+- **Amazon Q Developer CLI**：`q` CLI
+- **CodeBuddy CLI**：`codebuddy` CLI
+- **Qoder CLI**：`qoder` CLI
+- **Amp**：`amp` CLI
+- **SHAI**：`shai` CLI
 
-### IDE-Based Agents
+### 基于 IDE 的代理
 
-Work within integrated development environments:
+在集成开发环境中工作：
 
-- **GitHub Copilot**: Built into VS Code/compatible editors
-- **Windsurf**: Built into Windsurf IDE
-- **IBM Bob**: Built into IBM Bob IDE
+- **GitHub Copilot**：内置于 VS Code/兼容的编辑器
+- **Windsurf**：内置于 Windsurf IDE
+- **IBM Bob**：内置于 IBM Bob IDE
 
-## Command File Formats
+## 命令文件格式
 
-### Markdown Format
+### Markdown 格式
 
-Used by: Claude, Cursor, opencode, Windsurf, Amazon Q Developer, Amp, SHAI, IBM Bob
+使用者：Claude、Cursor、opencode、Windsurf、Amazon Q Developer、Amp、SHAI、IBM Bob
 
-**Standard format:**
+**标准格式：**
 
 ```markdown
 ---
-description: "Command description"
+description: "命令描述"
 ---
 
-Command content with {SCRIPT} and $ARGUMENTS placeholders.
+包含 {SCRIPT} 和 $ARGUMENTS 占位符的命令内容。
 ```
 
-**GitHub Copilot Chat Mode format:**
+**GitHub Copilot 聊天模式格式：**
 
 ```markdown
 ---
-description: "Command description"
+description: "命令描述"
 mode: speckit.command-name
 ---
 
-Command content with {SCRIPT} and $ARGUMENTS placeholders.
+包含 {SCRIPT} 和 $ARGUMENTS 占位符的命令内容。
 ```
 
-### TOML Format
+### TOML 格式
 
-Used by: Gemini, Qwen
+使用者：Gemini、Qwen
 
 ```toml
-description = "Command description"
+description = "命令描述"
 
 prompt = """
-Command content with {SCRIPT} and {{args}} placeholders.
+包含 {SCRIPT} 和 {{args}} 占位符的命令内容。
 """
 ```
 
-## Directory Conventions
+## 目录约定
 
-- **CLI agents**: Usually `.<agent-name>/commands/`
-- **IDE agents**: Follow IDE-specific patterns:
-  - Copilot: `.github/agents/`
-  - Cursor: `.cursor/commands/`
-  - Windsurf: `.windsurf/workflows/`
+- **CLI 代理**：通常是 `.<agent-name>/commands/`
+- **IDE 代理**：遵循 IDE 特定的模式：
+  - Copilot：`.github/agents/`
+  - Cursor：`.cursor/commands/`
+  - Windsurf：`.windsurf/workflows/`
 
-## Argument Patterns
+## 参数模式
 
-Different agents use different argument placeholders:
+不同的代理使用不同的参数占位符：
 
-- **Markdown/prompt-based**: `$ARGUMENTS`
-- **TOML-based**: `{{args}}`
-- **Script placeholders**: `{SCRIPT}` (replaced with actual script path)
-- **Agent placeholders**: `__AGENT__` (replaced with agent name)
+- **基于 Markdown/提示词的**：`$ARGUMENTS`
+- **基于 TOML 的**：`{{args}}`
+- **脚本占位符**：`{SCRIPT}`（替换为实际脚本路径）
+- **代理占位符**：`__AGENT__`（替换为代理名称）
 
-## Testing New Agent Integration
+## 测试新代理集成
 
-1. **Build test**: Run package creation script locally
-2. **CLI test**: Test `specify init --ai <agent>` command
-3. **File generation**: Verify correct directory structure and files
-4. **Command validation**: Ensure generated commands work with the agent
-5. **Context update**: Test agent context update scripts
+1. **构建测试**：在本地运行包创建脚本
+2. **CLI 测试**：测试 `specify init --ai <agent>` 命令
+3. **文件生成**：验证正确的目录结构和文件
+4. **命令验证**：确保生成的命令与代理正常工作
+5. **上下文更新**：测试代理上下文更新脚本
 
-## Common Pitfalls
+## 常见陷阱
 
-1. **Using shorthand keys instead of actual CLI tool names**: Always use the actual executable name as the AGENT_CONFIG key (e.g., `"cursor-agent"` not `"cursor"`). This prevents the need for special-case mappings throughout the codebase.
-2. **Forgetting update scripts**: Both bash and PowerShell scripts must be updated when adding new agents.
-3. **Incorrect `requires_cli` value**: Set to `True` only for agents that actually have CLI tools to check; set to `False` for IDE-based agents.
-4. **Wrong argument format**: Use correct placeholder format for each agent type (`$ARGUMENTS` for Markdown, `{{args}}` for TOML).
-5. **Directory naming**: Follow agent-specific conventions exactly (check existing agents for patterns).
-6. **Help text inconsistency**: Update all user-facing text consistently (help strings, docstrings, README, error messages).
+1. **使用简写键而不是实际的 CLI 工具名称**：始终使用实际的可执行文件名称作为 AGENT_CONFIG 键（例如 `"cursor-agent"` 而不是 `"cursor"`）。这可以避免在整个代码库中进行特殊情况映射。
+2. **忘记更新脚本**：添加新代理时必须同时更新 bash 和 PowerShell 脚本。
+3. **`requires_cli` 值不正确**：仅对实际具有 CLI 工具需要检查的代理设置为 `True`；对于基于 IDE 的代理设置为 `False`。
+4. **参数格式错误**：为每种代理类型使用正确的占位符格式（Markdown 使用 `$ARGUMENTS`，TOML 使用 `{{args}}`）。
+5. **目录命名**：严格遵循代理特定的约定（查看现有代理的模式）。
+6. **帮助文本不一致**：一致地更新所有面向用户的文本（帮助字符串、文档字符串、README、错误消息）。
 
-## Future Considerations
+## 未来考虑
 
-When adding new agents:
+添加新代理时：
 
-- Consider the agent's native command/workflow patterns
-- Ensure compatibility with the Spec-Driven Development process
-- Document any special requirements or limitations
-- Update this guide with lessons learned
-- Verify the actual CLI tool name before adding to AGENT_CONFIG
+- 考虑代理的原生命令/工作流模式
+- 确保与规格驱动开发流程的兼容性
+- 记录任何特殊要求或限制
+- 用所学到的经验更新本指南
+- 在添加到 AGENT_CONFIG 之前验证实际的 CLI 工具名称
 
 ---
 
-*This documentation should be updated whenever new agents are added to maintain accuracy and completeness.*
+*每当添加新代理时，应更新此文档以保持准确性和完整性。*
